@@ -120,8 +120,9 @@ def _iter_candidates(side_len: int) -> Iterator[str]:
 def new_solver(puzzle: str) -> Callable[[str], Iterator[str]]:
     """Return a function that yields solutions to the given puzzle.
 
-    :param puzzle: The puzzle to solve. A tuple of 81 integers with known values 1
-        through 9 and 0 in spots where we need to fill in.
+    :param puzzle: The puzzle to solve. A string with one character in the range
+        [chr(49), chr(49 + len(puzzle)**0.5)] for each known value and "0" for
+        each unknown value.
     :return: A function that yields solutions to the given puzzle.
     """
     if not (len(puzzle) ** 0.25) ** 4 == len(puzzle):
@@ -137,18 +138,14 @@ def new_solver(puzzle: str) -> Callable[[str], Iterator[str]]:
         if len(board) == len(puzzle):
             yield board
             return
-
         if puzzle[len(board)] != "0":
             yield from solve_from_here(board + puzzle[len(board)])
             return
-
         idx_groups = [f(len(board)) for f in idx_group_getters]
 
         def add_candidate_if_no_conflicts(board: str, candidate: str) -> str | None:
             """Add one candidate to the board if it doesn't conflict."""
-
             candidate_in_group_values = ft.partial(op_contains_flipped, candidate)
-
             try_puzzle = ft.partial(_try_items, puzzle)
             if any(map(candidate_in_group_values, map(try_puzzle, idx_groups))):
                 return
